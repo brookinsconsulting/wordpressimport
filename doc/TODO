@@ -1,0 +1,9 @@
+TODO
+
+- Add further documentation
+- Add additional cli arguments to script
+- Move bulk of script code into class, eZWordpressImport
+- Add transaction support (and argument to enable rollback on failure or function as it does now)
+- Add import of comments
+- Request testing from other users interested in conversion
+
