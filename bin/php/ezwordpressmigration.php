@@ -28,11 +28,17 @@ $useStandardOptions = true;
 $options = $script->getOptions( $config, $argumentConfig, $optionHelp, $arguments, $useStandardOptions );
 $script->initialize();
 
+
 // log in as admin
 include_once( 'kernel/classes/datatypes/ezuser/ezuser.php' );
+
 $user = eZUser::fetchByName( 'admin' );
+
 $userID = $user->attribute( 'contentobject_id' );
+
 eZUser::setCurrentlyLoggedInUser( $user, $userID );
+
+$cli->output( "Argument Count: " . count( $options['arguments'] ) . "\n" );
 
 if ( count( $options['arguments'] ) != 1 )
 {
@@ -40,6 +46,21 @@ if ( count( $options['arguments'] ) != 1 )
 }
 
 $wpFilePath = $options['arguments'][0];
+
+$cli->output( "Argument Wordpress File Path: $wpFilePath \n" );
+
+// TODO: Convert variables into arguments
+/* Defaults
+$contentClassIdentifier = 'blog';
+$parentNodeID = 414;
+*/
+
+$contentClassIdentifier = 'blog_post';
+$parentNodeID = 2;
+
+
+
+// Connect to wordpress database
 
 $host = is_string( $options['host'] ) ? $options['host'] : 'localhost';
 $user = is_string( $options['user'] ) ? $options['user'] : 'root';
@@ -85,6 +106,9 @@ if ( !$db or !$db->isConnected() )
     $script->shutdown( 3 );
 }
 
+
+// TODO: Abstract into eZWordpressImport Class
+
 $attachments = $db->arrayQuery( "SELECT ID, UNIX_TIMESTAMP(post_date) as post_date_timestamp, post_title, post_content, post_excerpt, UNIX_TIMESTAMP(post_modified) as post_modified_timestamp, post_name, guid FROM wp_posts WHERE post_status='attachment'" );
 
 $attachmentIDMap = array();
@@ -111,6 +135,7 @@ foreach ( $attachments as $att )
     $filePath = $wpFilePath . $url['path'];
 
     $cli->output( $filePath );
+
 /*
     $success = $upload->handleLocalFile( $result, $filePath, 'auto', false, $att['post_name'] );
     if ( $success )
@@ -137,13 +162,16 @@ foreach ( $attachments as $att )
     else
     {
         $cli->error( 'Storing ' . $filePath . ' failed.' );
-    }*/
+    }
+*/
 }
 
 $articles = $db->arrayQuery( "SELECT ID, UNIX_TIMESTAMP(post_date) as post_date_timestamp, post_title, post_content, post_excerpt, UNIX_TIMESTAMP(post_modified) as post_modified_timestamp, post_name, guid FROM wp_posts WHERE post_status='publish' ORDER BY post_date ASC" );
 
+/*
 $contentClassIdentifier = 'blog';
 $parentNodeID = 414;
+*/
 
 $postIDMap = array();
 
@@ -179,13 +207,16 @@ foreach ( $articles as $art )
         $attributeValues['leader'] = $leader;
     }
 
-    $cli->output( 'publishing ' . $art['post_title'] );
+
+    $cli->output( '* Publishing: ' . $art['post_title'] );
+
+    // DEBUG    print_r( $contentClassIdentifier );
 
     $result = publish( $parentNodeID, $contentClassIdentifier, $attributeValues );
 
     if ( !is_array( $result )  )
     {
-        $cli->output( 'failed publishing ' . $art['post_title'] );
+        $cli->output( '* Failed publishing: ' . $art['post_title'] );
     }
     else
     {
@@ -197,8 +228,17 @@ foreach ( $articles as $art )
         $url = parse_url( $art['guid'] );
         $source = $url['path'];
         $destination = '/content/view/full/' . $mainNodeID;
+	
+	// Deprecated as of 3.10alpha1, Error: blog_postezurlalias::create is deprecated, use the class eZURLAliasML instead
+        /* 
         include_once( 'kernel/classes/ezurlalias.php' );
         $alias = eZURLAlias::create( $source, $destination, false );
+        $alias->store();
+	*/
+
+	// Compatible with 3.10+
+	include_once( 'kernel/classes/ezurlaliasml.php' );
+        $alias = eZURLAliasML::create( $source, $destination, false );
         $alias->store();
 
         $object->setAttribute( 'remote_id', 'wordpress_import_' . $art['ID'] );
