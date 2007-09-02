@@ -6,4 +6,5 @@ TODO
 - Add transaction support (and argument to enable rollback on failure or function as it does now)
 - Add import of comments
 - Request testing from other users interested in conversion
+- Add utf8 support
 
