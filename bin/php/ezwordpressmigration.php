@@ -107,12 +107,6 @@ $attachments = $db->arrayQuery( "SELECT ID, UNIX_TIMESTAMP(post_date) as post_da
 $attachmentIDMap = array();
 $attachmentPathIDMap = array();
 
-// START temporary workaround for bug http://issues.ez.no/IssueView.php?Id=9291
-include_once( 'lib/ezutils/classes/ezhttptool.php' );
-include_once( 'lib/ezutils/classes/ezini.php' );
-include_once( 'kernel/classes/ezcontentclass.php' );
-// END temporary workaround for bug http://issues.ez.no/IssueView.php?Id=9291
-
 include_once( 'kernel/classes/ezcontentupload.php' );
 $upload = new eZContentUpload();
 
@@ -160,11 +154,6 @@ foreach ( $attachments as $att )
 }
 
 $articles = $db->arrayQuery( "SELECT ID, UNIX_TIMESTAMP(post_date) as post_date_timestamp, post_title, post_content, post_excerpt, UNIX_TIMESTAMP(post_modified) as post_modified_timestamp, post_name, guid FROM wp_posts WHERE post_status='publish' ORDER BY post_date ASC" );
-
-/*
-$contentClassIdentifier = 'blog';
-$parentNodeID = 414;
-*/
 
 $postIDMap = array();
 
