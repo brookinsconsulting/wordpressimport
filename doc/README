@@ -1,0 +1,11 @@
+
+By default, the script makes use of a content class with the identifier "blog_post" to import your WordPress posts. However, you can change the class
+used for importing the posts by using the --post-class command line option.
+
+The eZ Publish content class for blog posts should exist at least of the following attributes:
+- title     ezstring
+- body      ezxmltext
+- leader    ezxmltext
+
+By default, the script imports posts under the content node with ID 2, which is the root node of the content tree on an out-of-the-box eZ Publish
+installation.  However, you can change the parent node for blog posts by using the --parent-node command line option.

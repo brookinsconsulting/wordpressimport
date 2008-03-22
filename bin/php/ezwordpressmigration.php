@@ -15,12 +15,13 @@ $scriptSettings['use-extensions'] = true;
 $script =& eZScript::instance( $scriptSettings );
 $script->startup();
 
-$config = '[host:][user:][password:][database:]';
+$config = '[host:][user:][password:][database:][post-class:][parent-node:]';
 $argumentConfig = '[wpfilepath]';
 $optionHelp = array( 'host' => 'Connect to database host',
                      'user' => 'User for login to the database',
                      'password' => 'Password to use for login to the database',
-                     'database' => 'Wordpress database' );
+                     'database' => 'Wordpress database',
+                     'post-class' => 'Identifier of the eZ Publish content class to use for importing blog posts' );
 
 $arguments = false;
 $useStandardOptions = true;
@@ -49,16 +50,8 @@ $wpFilePath = $options['arguments'][0];
 
 $cli->output( "Argument Wordpress File Path: $wpFilePath \n" );
 
-// TODO: Convert variables into arguments
-/* Defaults
-$contentClassIdentifier = 'blog';
-$parentNodeID = 414;
-*/
-
-$contentClassIdentifier = 'blog_post';
-$parentNodeID = 2;
-
-
+$contentClassIdentifier = $options['post-class'] ? $options['post-class'] : 'blog_post';
+$parentNodeID = $options['parent-node'] ? $options['parent-node'] : 2;
 
 // Connect to wordpress database
 
@@ -228,16 +221,16 @@ foreach ( $articles as $art )
         $url = parse_url( $art['guid'] );
         $source = $url['path'];
         $destination = '/content/view/full/' . $mainNodeID;
-	
-	// Deprecated as of 3.10alpha1, Error: blog_postezurlalias::create is deprecated, use the class eZURLAliasML instead
-        /* 
+
+    // Deprecated as of 3.10alpha1, Error: blog_postezurlalias::create is deprecated, use the class eZURLAliasML instead
+        /*
         include_once( 'kernel/classes/ezurlalias.php' );
         $alias = eZURLAlias::create( $source, $destination, false );
         $alias->store();
-	*/
+    */
 
-	// Compatible with 3.10+
-	include_once( 'kernel/classes/ezurlaliasml.php' );
+    // Compatible with 3.10+
+    include_once( 'kernel/classes/ezurlaliasml.php' );
         $alias = eZURLAliasML::create( $source, $destination, false );
         $alias->store();
 
